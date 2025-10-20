@@ -1,0 +1,44 @@
+# Symfony and Composer
+/vendor/
+/var/
+/.env.local
+.env.*.local
+.env.test
+.env.test.local
+
+# Symfony cache/logs (if present)
+var/cache/
+var/log/
+
+# Ignore sensitive or environment-specific files
+/.env.local
+/.env.*.local
+/.env.test
+/.env.test.local
+
+# Docker-related (optional)
+*.pid
+*.log
+docker-compose.override.yml
+
+# OS / Editor / IDE specific
+.DS_Store
+.idea/
+.vscode/
+*.swp
+*~
+
+# PHPUnit
+/phpunit.xml
+/phpunit.xml.dist
+coverage/
+
+# Node.js (if using Encore or frontend tooling)
+/node_modules/
+/public/build/
+
+# Ignore .sass-cache if using SCSS
+.sass-cache/
+
+# Composer backups
+composer.lock.bak
