@@ -6,14 +6,15 @@ services:
       context: .
     volumes:
       - ./:/var/www/html
-    ports:
-      - "8080:80"
-    depends_on:
+    depends_on: 
       - db
-      - redis
+      - redis 
+    command: symfony server:start --no-tls --port=80 --allow-all-ip
+    ports: 
+      - "8080:8000"
 
   db:
-    image: postgres:15
+    image: postgres:15.2-bullseye
     environment:
       POSTGRES_DB: app
       POSTGRES_USER: user
@@ -22,6 +23,7 @@ services:
       - "5432:5432"
 
   redis:
-    image: redis:6
+    image: redis:6.2.6
+    command: ["redis-server", "--save", "", "--appendonly", "no", "--loglevel", "warning"]
     ports:
       - "6379:6379"

@@ -12,6 +12,10 @@ RUN apt-get update && \
 # Copiar Composer des de la imatge oficial de Composer (multi-stage build)
 COPY --from=composer:2 /usr/bin/composer /usr/bin/composer
 
+# Instalar Symfony CLI
+RUN curl -sS https://get.symfony.com/cli/installer | bash \
+    && mv /root/.symfony*/bin/symfony /usr/local/bin/symfony
+    
 # Definir directori de treball (on estarà el codi Symfony)
 WORKDIR /var/www/html
 
