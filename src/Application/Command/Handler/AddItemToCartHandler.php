@@ -1,10 +1,11 @@
 <?php
-namespace App\Cart\Application\CommandHandler;
+namespace App\Application\Command\Handler;
 
-use App\Cart\Application\Command\AddItemToCartCommand;
-use App\Cart\Domain\Model\Cart;
-use App\Cart\Domain\Model\CartItem;
-use App\Cart\Domain\Repository\CartRepositoryInterface;
+use App\Application\Command\AddItemToCartCommand;
+use App\Domain\Entity\Cart;
+use App\Domain\Entity\CartItem;
+use App\Domain\Repository\CartRepositoryInterface;
+use Exception;
 
 class AddItemToCartHandler
 {
@@ -15,12 +16,13 @@ class AddItemToCartHandler
         $this->repository = $repository;
     }
 
+
     public function __invoke(AddItemToCartCommand $command): void
     {
         $cart = $this->repository->findById($command->cartId);
 
         if (!$cart) {
-            $cart = new Cart($command->cartId);
+            throw new Exception($command->cartId);
         }
 
         $cartItem = new CartItem($command->productId, $command->quantity);

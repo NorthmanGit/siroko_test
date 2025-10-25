@@ -1,0 +1,7 @@
+Instruccions:
+
+sudo docker-compose up --build
+
+sudo docker exec -it siroko_test_app_1 bash
+
+php bin/console debug:router

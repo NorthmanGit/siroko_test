@@ -1,9 +1,9 @@
 <?php
 
-namespace App\Cart\Infrastructure\Repository;
+namespace App\Infrastructure\Repository;
 
-use App\Cart\Domain\Model\Cart;
-use App\Cart\Domain\Repository\CartRepositoryInterface;
+use App\Domain\Entity\Cart;
+use App\Domain\Repository\CartRepositoryInterface;
 use Predis\Client;
 
 class RedisCartRepository implements CartRepositoryInterface

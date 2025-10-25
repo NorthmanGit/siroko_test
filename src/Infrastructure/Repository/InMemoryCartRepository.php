@@ -1,5 +1,5 @@
 <?php
-namespace App\Cart\Infrastructure\Repository;
+namespace App\Application\Infrastructure\Repository;
 
 use App\Cart\Domain\Model\Cart;
 use App\Cart\Domain\Repository\CartRepositoryInterface;

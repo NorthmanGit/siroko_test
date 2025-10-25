@@ -1,7 +1,7 @@
 <?php
-namespace App\Cart\Domain\Repository;
+namespace App\Domain\Repository;
 
-use App\Cart\Domain\Model\Cart;
+use App\Domain\Entity\Cart;
 
 interface CartRepositoryInterface
 {

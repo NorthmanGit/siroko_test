@@ -9,14 +9,18 @@ framework:
             # failed: 'doctrine://default?queue_name=failed'
             # sync: 'sync://'
 
-        routing:
-            # Route your messages to the transports
-            # 'App\Message\YourMessage': async
+        default_bus: command.bus
 
-# when@test:
-#    framework:
-#        messenger:
-#            transports:
-#                # replace with your transport name here (e.g., my_transport: 'in-memory://')
-#                # For more Messenger testing tools, see https://github.com/zenstruck/messenger-test
-#                async: 'in-memory://'
+        buses:
+            command.bus:
+                default_middleware: allow_no_handlers
+                middleware:
+                    - dispatch_after_current_bus
+                    - doctrine_transaction
+                    - validation
+
+            query.bus:
+                default_middleware: allow_no_handlers
+                middleware:
+                    - dispatch_after_current_bus
+                    - validation

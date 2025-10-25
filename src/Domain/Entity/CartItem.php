@@ -1,5 +1,5 @@
 <?php
-namespace App\Cart\Domain\Model;
+namespace App\Domain\Entity;
 
 class CartItem
 {
@@ -27,4 +27,3 @@ class CartItem
         $this->quantity += $amount;
     }
 }
-    

@@ -9,7 +9,7 @@ services:
     depends_on: 
       - db
       - redis 
-    command: symfony server:start --no-tls --port=80 --allow-all-ip
+    command: symfony server:start --no-tls --port=8000 --allow-all-ip
     ports: 
       - "8080:8000"
 
