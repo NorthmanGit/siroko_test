@@ -3,8 +3,8 @@ namespace App\Application\Query;
 
 
 use Symfony\Component\Validator\Constraints as Assert;
-
-class GetCartQuery
+use App\Application\QueryCommandInterface;
+class GetCartQuery implements QueryCommandInterface
 {
     #[Assert\NotBlank]
     #[Assert\Uuid]

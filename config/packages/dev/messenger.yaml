@@ -1,0 +1,8 @@
+framework:
+  messenger:
+    transports:
+      sync: 'sync://'
+    routing:
+      'App\Application\Command\Handler\CreateCartHandler': sync
+      'App\Application\Command\Handler\AddItemToCartHandler': sync
+      'App\Application\Query\Handler\GetCartHandler': sync

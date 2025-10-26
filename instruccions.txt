@@ -4,4 +4,15 @@ sudo docker-compose up --build
 
 sudo docker exec -it siroko_test_app_1 bash
 
+php bin/console cache:clear
+
 php bin/console debug:router
+
+php bin/phpunit --filter CartApiTest
+
+php bin/console about --env=test
+php bin/console debug:container App\Application\Command\Handler\CreateCartHandler --env=test
+
+php bin/console debug:container --parameters
+php bin/console debug:container --parameter=kernel.logs_dir --env=test
+    

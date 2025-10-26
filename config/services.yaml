@@ -15,14 +15,14 @@ services:
     # Automatically register all handlers
     App\Application\Command\Handler\:
         resource: '../src/Application/Command/Handler'
-        tags: [ 'messenger.message_handler' ]
+        tags: [ 'messenger.message_handler' , 'app.handler' ]
         autowire: true
         autoconfigure: false
         public: false
 
     App\Application\Query\Handler\:
         resource: '../src/Application/Query/Handler'
-        tags: [ 'messenger.message_handler' ]
+        tags: [ 'messenger.message_handler' , 'app.handler' ]
         autowire: true
         autoconfigure: false
         public: false

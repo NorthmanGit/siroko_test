@@ -4,7 +4,7 @@ namespace App\Application\Model;
 
 use App\Domain\Entity\Cart;
 
-final class CartViewModel
+final class CartViewModel implements ViewModelInterface
 {
     private string $cartId;
     private array $items;
@@ -25,7 +25,7 @@ final class CartViewModel
         return $this->items;
     }
 
-    public static function fromDomainCart(Cart $cart): self
+    public static function fromDomainCart(Cart $cart): ?ViewModelInterface
     {
         // Simple example: transform Domain Cart → ViewModel
         $items = [];
@@ -41,5 +41,13 @@ final class CartViewModel
             $cart->getId(),
             $items
         );
+    }
+
+    public function toArray(): array
+    {
+        return [
+            'cartId' => $this->cartId,
+            'items'  => $this->items,
+        ];
     }
 }

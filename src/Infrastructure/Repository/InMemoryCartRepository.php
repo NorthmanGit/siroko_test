@@ -1,8 +1,8 @@
 <?php
 namespace App\Application\Infrastructure\Repository;
 
-use App\Cart\Domain\Model\Cart;
-use App\Cart\Domain\Repository\CartRepositoryInterface;
+use App\Domain\Model\Cart;
+use App\Domain\Repository\CartRepositoryInterface;
 
 class InMemoryCartRepository implements CartRepositoryInterface
 {
