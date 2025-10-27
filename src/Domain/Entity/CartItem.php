@@ -26,4 +26,8 @@ class CartItem
     {
         $this->quantity += $amount;
     }
+    public function setQuantity(int $quantity): void
+    {
+        $this->quantity = $quantity;
+    }
 }

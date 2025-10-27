@@ -43,4 +43,32 @@ class Cart
         }
         return null;
     }
+
+    public function removeItem(string $productId): void
+    {
+        $this->items = array_filter(
+            $this->items,
+            fn (CartItem $item) => $item->getProductId() !== $productId
+        );
+    }
+
+    public function updateItemQuantity(string $productId, int $newQuantity): void
+    {
+        foreach ($this->items as $index => $item) {
+            if ($item->getProductId() === $productId) {
+                if ($newQuantity <= 0) {
+                    // Si la quantitat nova és 0 o negativa, eliminem l'ítem
+                    unset($this->items[$index]);
+                    $this->items = array_values($this->items);
+                    return;
+                }
+
+                $item->setQuantity($newQuantity);
+                return;
+            }
+        }
+
+        throw new \RuntimeException("Product {$productId} not found in cart {$this->id}");
+    }
+
 }

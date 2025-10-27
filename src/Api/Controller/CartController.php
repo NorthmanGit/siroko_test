@@ -1,16 +1,18 @@
-<?php
+<?php 
 
 namespace App\Api\Controller;
 
 use App\Application\Command\AddItemToCartCommand;
 use App\Application\Query\GetCartQuery;
 use App\Application\Command\CreateCartCommand;
+use App\Application\Command\RemoveItemFromCartCommand;
 use Psr\Log\LoggerInterface;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Component\Messenger\MessageBusInterface;
 use Symfony\Component\Messenger\HandleTrait;
+use App\Application\Command\UpdateCartItemQuantityCommand;
 
 class CartController
 {
@@ -129,4 +131,61 @@ class CartController
             return new JsonResponse(['error' => 'Internal server error'], 500);
         }
     }
+    #[Route('/api/cart/{id}/item/{productId}', name: 'remove_item_from_cart', methods: ['DELETE'])]
+    public function removeItem(string $id, string $productId): JsonResponse
+    {
+        try {
+            $command = new RemoveItemFromCartCommand($id, $productId);
+            $this->commandBus->dispatch($command);
+
+            $this->logger->info('Item removed from cart', [
+                'cartId' => $id,
+                'productId' => $productId,
+            ]);
+
+            return new JsonResponse(['status' => 'item removed'], 200);
+        } catch (\Symfony\Component\Messenger\Exception\ValidationFailedException $e) {
+            // Log validation failure
+            $this->logger->warning('Validation failed for delete item query', [
+                'cartId' => $id,
+                'productId' => $productId,
+                'errors' => (string) $e->getViolations(),
+            ]);
+
+            return new JsonResponse([
+                'error' => 'Validation failed',
+                'details' => (string) $e->getViolations(),
+            ], 400);
+
+        }catch (\Throwable $e) {
+            $this->logger->error('Error removing item from cart', ['exception' => $e]);
+            return new JsonResponse(['error' => 'Internal server error'], 500);
+        }
+    }
+    #[Route('/api/cart/{id}/item/{productId}', name: 'update_item_quantity', methods: ['PATCH'])]
+    public function updateItemQuantity(string $id, string $productId, Request $request): JsonResponse
+    {
+        try {
+            $data = json_decode($request->getContent(), true);
+            if (!isset($data['quantity'])) {
+                return new JsonResponse(['error' => 'Missing quantity'], 400);
+            }
+    
+            $command = new UpdateCartItemQuantityCommand($id, $productId, (int) $data['quantity']);
+            $this->commandBus->dispatch($command);
+    
+            $this->logger->info('Item quantity updated', [
+                'cartId' => $id,
+                'productId' => $productId,
+                'newQuantity' => $data['quantity']
+            ]);
+    
+            return new JsonResponse(['status' => 'quantity updated'], 200);
+    
+        } catch (\Throwable $e) {
+            $this->logger->error('Error updating item quantity', ['exception' => $e]);
+            return new JsonResponse(['error' => 'Internal server error'], 500);
+        }
+    }
+    
 }
