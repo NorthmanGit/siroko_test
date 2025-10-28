@@ -1,106 +1,170 @@
+
+# Siroko Test API
+
+API REST desarrollada en **Symfony 7**, estructurada siguiendo los principios de **Domain-Driven Design (DDD)**, **Arquitectura Hexagonal** y **CQRS (Command Query Responsibility Segregation)**.  
+El proyecto está completamente dockerizado e integra persistencia mediante **PostgreSQL** y almacenamiento temporal en **Redis**.
+
 ---
 
-# Symfony Docker Setup
+## Getting Started
 
-This project is a basic Docker environment for running a Symfony application using:
-
-* **PHP 8.2 (FPM)**
-* **PostgreSQL**
-* **Redis**
-* **Docker Compose**
-
-## 🚀 Getting Started
-
-### 1. Clone the repository
+### 1. Clonar el repositorio
 
 ```bash
 git clone <repo-url>
 cd siroko_test
-```
+````
 
-### 2. Build and start the containers
-
-Make sure Docker and Docker Compose are installed and running.
+### 2. Levantar el entorno Docker
 
 ```bash
 sudo docker-compose up --build -d
 ```
 
-### 3. Check container status
+### 3. Instalar dependencias
 
-```bash
-sudo docker-compose ps
-```
-
-You should see something like:
-
-```
-Name                    Command                  State           Ports
-----------------------------------------------------------------------------
-siroko_test_app_1       docker-php-entrypoint    Up              0.0.0.0:8080->80/tcp
-siroko_test_db_1        docker-entrypoint.sh     Exit 1
-siroko_test_redis_1     docker-entrypoint.sh     Exit 1
-```
-
-> ⚠️ If `db` or `redis` are exiting, check the logs:
->
-> ```bash
-> docker-compose logs db
-> docker-compose logs redis
-> ```
-
-## 🛠 Installing Symfony Dependencies
-
-The PHP container includes Composer, but dependencies are **not installed automatically**. You must do it manually.
-
-### 1. Enter the app container
+Entrar al contenedor PHP y ejecutar Composer:
 
 ```bash
 sudo docker exec -it siroko_test_app_1 bash
-```
-
-### 2. Install dependencies
-
-Inside the container:
-
-```bash
 composer install
 ```
 
-Or if needed:
+### 4. Ejecutar migraciones (base de datos PostgreSQL)
+
+Para generar y aplicar las migraciones necesarias para el modelo de datos (entidades `Order` y `OrderItem`):
 
 ```bash
-composer update
+php bin/console doctrine:migrations:migrate
 ```
 
-> This will generate the `vendor/` directory and install Symfony dependencies.
+Esto creará las tablas en la base de datos configurada en `.env`
 
-## 📁 Project Structure (after composer install)
 
-```bash
-.
-├── Dockerfile               # PHP 8.2 + Symfony + extensions
-├── docker-compose.yml       # Defines app, db, redis services
-├── composer.json            # Project dependencies (Symfony Flex)
-├── composer.lock            # Locked versions of dependencies
-├── .env                     # Symfony environment variables
-├── vendor/                  # Created after composer install/update
-└── ...
-```
+### 5. Verificar servicios
 
-## ⚙️ Default Ports
-
-| Service | Port                    |
-| ------- | ----------------------- |
-| App     | `http://localhost:8080` |
-| DB      | `5432`                  |
-| Redis   | `6379`                  |
-
-## ✅ Notes
-
-* The Dockerfile installs PHP extensions for PostgreSQL and Redis.
-* Composer is copied from the official Composer image.
-* Symfony source code is mounted into the container at `/var/www/html`.
-* The `vendor/` folder is ignored in Git and is only created after installing dependencies inside the container.
+| Servicio                 | URL / Puerto                                                     |
+| ------------------------ | ---------------------------------------------------------------- |
+| API                      | [http://localhost:8080](http://localhost:8080)                   |
+| PostgreSQL               | 5432                                                             |
+| Redis                    | 6379                                                             |
+| Swagger UI (si activado) | [http://localhost:8080/api/docs](http://localhost:8080/api/docs) |
 
 ---
+
+## Breve descripción del proyecto
+
+El sistema implementa una **API de carrito de compras (Cart)** que permite:
+
+* Crear un carrito (`POST /api/cart`)
+* Añadir o eliminar productos (`POST /api/cart/{id}/item`, `DELETE /api/cart/{id}/item/{productId}`)
+* Modificar cantidades (`PATCH /api/cart/{id}/item/{productId}`)
+* Consultar el carrito (`GET /api/cart/{id}`)
+* Realizar el **checkout** (`POST /api/cart/{cartId}/checkout`)
+
+El proceso de checkout genera una **orden (Order)** persistida en la base de datos, eliminando el carrito de Redis tras la confirmación.
+
+---
+
+## Modelado del dominio
+
+El dominio se ha separado en **entidades** y **repositorios**, siguiendo una **arquitectura hexagonal**.
+
+### Entidades principales
+
+* **Cart** → Representa el carrito temporal (almacenado en Redis).
+* **CartItem** → Producto agregado al carrito.
+* **Order** → Representa una orden confirmada, persistida en PostgreSQL.
+* **OrderItem** → Ítem de una orden.
+
+### Repositorios
+
+* `CartRepositoryInterface` → Implementado por `RedisCartRepository`.
+* `OrderRepositoryInterface` → Implementado por `DoctrineOrderRepository`.
+
+### Patrón CQRS
+
+* **Commands** → Mutan el estado del sistema (crear carrito, añadir producto, checkout...).
+* **Queries** → Consultan información (recuperar el carrito).
+* **Handlers** → Ejecutan la lógica de cada comando o consulta.
+
+---
+
+##  Tecnología utilizada
+
+| Componente                  | Descripción                                              |
+| --------------------------- | -------------------------------------------------------- |
+| **Symfony 7**               | Framework principal del API                              |
+| **Doctrine ORM**            | Persistencia en PostgreSQL                               |
+| **Redis**                   | Almacenamiento temporal de carritos                      |
+| **Messenger**               | Implementación CQRS y bus de comandos/consultas          |
+| **PHP 8.2 (FPM)**           | Lenguaje base                                            |
+| **PostgreSQL**              | Base de datos relacional                                 |
+| **Docker & Docker Compose** | Entorno de desarrollo aislado                            |
+| **NelmioApiDocBundle**      | Generación automática de documentación OpenAPI / Swagger |
+
+---
+
+## OpenAPI / Swagger Specification
+
+La documentación del API se genera automáticamente con **NelmioApiDocBundle**.
+
+### JSON Specification
+
+## Swagger de test
+
+1. Abre tu navegador en [http://localhost:8080/api/docs](http://localhost:8080/api/docs)
+2. Explora los endpoints:
+
+   * `POST /api/cart`
+   * `POST /api/cart/{id}/item`
+   * `GET /api/cart/{id}`
+   * `PATCH /api/cart/{id}/item/{productId}`
+   * `DELETE /api/cart/{id}/item/{productId}`
+   * `POST /api/cart/{cartId}/checkout`
+3. Puedes realizar pruebas directamente desde la interfaz Swagger.
+---
+
+## Tests
+
+El proyecto incluye **tests funcionales** implementados con `PHPUnit` para verificar el comportamiento completo del API.
+
+Para ejecutar los tests:
+
+```bash
+sudo docker exec -it siroko_test_app_1 bash
+php bin/phpunit
+```
+
+### Tests principales
+
+* `CartApiTest` → Cubre creación, actualización y borrado del carrito.
+* `CheckoutHandlerTest` → Cubre el proceso de checkout y persistencia de ordenes.
+
+Los tests validan la comunicación entre Redis, Doctrine y los handlers CQRS.
+
+
+---
+
+## Arquitectura general
+
+```text
+┌────────────────────┐
+│  Presentation/API  │   ← Symfony Controllers
+└────────┬───────────┘
+         │
+         ▼
+┌────────────────────┐
+│ Application Layer  │   ← Commands / Queries / Handlers (CQRS)
+└────────┬───────────┘
+         │
+         ▼
+┌────────────────────┐
+│   Domain Layer     │   ← Entities + Repositories (DDD)
+└────────┬───────────┘
+         │
+         ▼
+┌────────────────────┐
+│ Infrastructure     │   ← Doctrine, Redis, Repositories
+└────────────────────┘
+```
