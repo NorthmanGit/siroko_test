@@ -2,6 +2,8 @@
 
 namespace App\Api\Controller;
 
+use OpenApi\Attributes as OA;
+
 use App\Application\Command\CheckoutCommand;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
@@ -25,6 +27,33 @@ class CheckoutController extends AbstractController
     }
 
 #[Route('/api/cart/{cartId}/checkout', name: 'cart_checkout', methods: ['POST'])]
+#[OA\Post(
+    path: '/api/cart/{cartId}/checkout',
+    summary: 'Perform checkout and create an order from the cart',
+    parameters: [
+        new OA\Parameter(
+            name: 'cartId',
+            in: 'path',
+            required: true,
+            description: 'Cart UUID to checkout',
+            schema: new OA\Schema(type: 'string')
+        )
+    ],
+    responses: [
+        new OA\Response(
+            response: 201,
+            description: 'Checkout completed successfully',
+            content: new OA\JsonContent(
+                properties: [
+                    new OA\Property(property: 'status', type: 'string', example: 'checkout completed'),
+                    new OA\Property(property: 'orderId', type: 'integer', example: 42)
+                ]
+            )
+        ),
+        new OA\Response(response: 400, description: 'Validation or business error'),
+        new OA\Response(response: 500, description: 'Internal server error')
+    ]
+)]
 public function __invoke(string $cartId, MessageBusInterface $commandBus): JsonResponse
 {
     try {

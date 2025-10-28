@@ -2,6 +2,8 @@
 
 namespace App\Api\Controller;
 
+use OpenApi\Attributes as OA;
+
 use App\Application\Command\AddItemToCartCommand;
 use App\Application\Query\GetCartQuery;
 use App\Application\Command\CreateCartCommand;
@@ -26,7 +28,25 @@ class CartController
         $this->messageBus = $queryBus; // for HandleTrait
     }
 
+    
     #[Route('/api/cart', name: 'create_cart', methods: ['POST'])]
+    #[OA\Post(
+        path: '/api/cart',
+        summary: 'Create a new cart',
+        responses: [
+            new OA\Response(
+                response: 201,
+                description: 'Cart created successfully',
+                content: new OA\JsonContent(
+                    properties: [
+                        new OA\Property(property: 'cartId', type: 'string', example: 'b7e0e2c0-0b7f-4c3f-8a3e-8f9c9f7a12f5'),
+                    ],
+                    type: 'object'
+                )
+            ),
+            new OA\Response(response: 500, description: 'Internal server error')
+        ]
+    )]
     public function createCart(): JsonResponse
     {
         try {
@@ -46,6 +66,28 @@ class CartController
     }
 
     #[Route('/api/cart/{id}/item', name: 'add_item_to_cart', methods: ['POST'])]
+    #[OA\Post(
+        path: '/api/cart/{id}/item',
+        summary: 'Add an item to the cart',
+        parameters: [
+            new OA\Parameter(name: 'id', in: 'path', required: true, schema: new OA\Schema(type: 'string')),
+        ],
+        requestBody: new OA\RequestBody(
+            required: true,
+            content: new OA\JsonContent(
+                required: ['productId', 'quantity'],
+                properties: [
+                    new OA\Property(property: 'productId', type: 'string', example: 'SKU123'),
+                    new OA\Property(property: 'quantity', type: 'integer', example: 2)
+                ]
+            )
+        ),
+        responses: [
+            new OA\Response(response: 201, description: 'Item added successfully'),
+            new OA\Response(response: 400, description: 'Validation failed'),
+            new OA\Response(response: 500, description: 'Internal server error')
+        ]
+    )]
     public function addItem(string $id, Request $request): JsonResponse
     {
         try {
@@ -87,6 +129,31 @@ class CartController
     }
 
     #[Route('/api/cart/{id}', name: 'get_cart', methods: ['GET'])]
+    #[OA\Get(
+        path: '/api/cart/{id}',
+        summary: 'Retrieve a cart and its items',
+        parameters: [
+            new OA\Parameter(name: 'id', in: 'path', required: true, schema: new OA\Schema(type: 'string')),
+        ],
+        responses: [
+            new OA\Response(
+                response: 200,
+                description: 'Cart retrieved successfully',
+                content: new OA\JsonContent(
+                    properties: [
+                        new OA\Property(property: 'id', type: 'string', example: 'b7e0e2c0-0b7f-4c3f-8a3e-8f9c9f7a12f5'),
+                        new OA\Property(property: 'items', type: 'array', items:
+                            new OA\Items(properties: [
+                                new OA\Property(property: 'productId', type: 'string', example: 'SKU123'),
+                                new OA\Property(property: 'quantity', type: 'integer', example: 2)
+                            ])
+                        )
+                    ]
+                )
+            ),
+            new OA\Response(response: 404, description: 'Cart not found')
+        ]
+    )]
     public function getCart(string $id): JsonResponse
     {
         try {
@@ -121,6 +188,19 @@ class CartController
         }
     }
     #[Route('/api/cart/{id}/item/{productId}', name: 'remove_item_from_cart', methods: ['DELETE'])]
+    #[OA\Delete(
+        path: '/api/cart/{id}/item/{productId}',
+        summary: 'Remove an item from the cart',
+        parameters: [
+            new OA\Parameter(name: 'id', in: 'path', required: true, schema: new OA\Schema(type: 'string')),
+            new OA\Parameter(name: 'productId', in: 'path', required: true, schema: new OA\Schema(type: 'string')),
+        ],
+        responses: [
+            new OA\Response(response: 200, description: 'Item removed'),
+            new OA\Response(response: 400, description: 'Validation failed'),
+            new OA\Response(response: 500, description: 'Internal server error')
+        ]
+    )]
     public function removeItem(string $id, string $productId): JsonResponse
     {
         try {
@@ -151,6 +231,28 @@ class CartController
         }
     }
     #[Route('/api/cart/{id}/item/{productId}', name: 'update_item_quantity', methods: ['PATCH'])]
+    #[OA\Patch(
+        path: '/api/cart/{id}/item/{productId}',
+        summary: 'Update quantity of an item in the cart',
+        parameters: [
+            new OA\Parameter(name: 'id', in: 'path', required: true, schema: new OA\Schema(type: 'string')),
+            new OA\Parameter(name: 'productId', in: 'path', required: true, schema: new OA\Schema(type: 'string')),
+        ],
+        requestBody: new OA\RequestBody(
+            required: true,
+            content: new OA\JsonContent(
+                required: ['quantity'],
+                properties: [
+                    new OA\Property(property: 'quantity', type: 'integer', example: 3)
+                ]
+            )
+        ),
+        responses: [
+            new OA\Response(response: 200, description: 'Quantity updated'),
+            new OA\Response(response: 400, description: 'Missing quantity or validation failed'),
+            new OA\Response(response: 500, description: 'Internal server error')
+        ]
+    )]
     public function updateItemQuantity(string $id, string $productId, Request $request): JsonResponse
     {
         try {
