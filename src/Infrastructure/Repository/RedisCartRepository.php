@@ -39,4 +39,9 @@ class RedisCartRepository implements CartRepositoryInterface
     {
         return sprintf('cart:%s', $id);
     }
+
+    public function delete(string $id): void
+    {
+        $this->redis->del([$this->getKey($id)]);
+    }
 }

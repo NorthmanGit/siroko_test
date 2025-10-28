@@ -38,3 +38,10 @@ services:
             $redis: '@redis.client'
 
     App\Domain\Repository\CartRepositoryInterface: '@App\Infrastructure\Repository\RedisCartRepository'
+
+    App\Domain\Repository\OrderRepositoryInterface: '@App\Infrastructure\Repository\DoctrineOrderRepository'
+
+    App\Infrastructure\Repository\DoctrineOrderRepository:
+        arguments:
+            $em: '@doctrine.orm.entity_manager'
+            $cartRepository: '@App\Domain\Repository\CartRepositoryInterface'

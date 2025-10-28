@@ -33,15 +33,12 @@ class CartController
             $command = new CreateCartCommand();
             $envelope = $this->commandBus->dispatch($command);
 
-            // Suppose the handler returns a UUID (as string)
             $cartId = $envelope->getMessage()->getId();
 
-            // Log success message
             $this->logger->info('Cart created successfully', ['cartId' => $cartId]);
 
             return new JsonResponse(['cartId' => $cartId], 201);
         } catch (\Throwable $e) {
-            // Log error details
             $this->logger->error('Error creating cart', ['exception' => $e]);
 
             return new JsonResponse(['error' => 'Internal server error'], 500);
@@ -54,7 +51,6 @@ class CartController
         try {
             $data = json_decode($request->getContent(), true);
 
-            // Defensive checks for missing data
             if (!isset($data['productId'], $data['quantity'])) {
                 $this->logger->warning('Missing required fields in add item request', ['cartId' => $id]);
 
@@ -64,7 +60,6 @@ class CartController
             $command = new AddItemToCartCommand($id, $data['productId'], (int) $data['quantity']);
             $this->commandBus->dispatch($command);
 
-            // Log the item added successfully
             $this->logger->info('Item added to cart', [
                 'cartId' => $id,
                 'productId' => $data['productId'],
@@ -74,7 +69,6 @@ class CartController
             return new JsonResponse(['status' => 'item added'], 201);
 
         } catch (\Symfony\Component\Messenger\Exception\ValidationFailedException $e) {
-            // Log validation failure
             $this->logger->warning('Validation failed for add item to cart', [
                 'cartId' => $id,
                 'errors' => (string) $e->getViolations(),
@@ -86,7 +80,6 @@ class CartController
             ], 400);
 
         } catch (\Throwable $e) {
-            // Log unexpected errors
             $this->logger->error('Unexpected error adding item to cart', ['exception' => $e]);
 
             return new JsonResponse(['error' => 'Internal server error'], 500);
@@ -101,19 +94,16 @@ class CartController
             $cartView = $this->handle($query);
 
             if (!$cartView) {
-                // Log cart not found
                 $this->logger->warning('Cart not found', ['cartId' => $id]);
 
                 return new JsonResponse(['error' => 'Cart not found'], 404);
             }
 
-            // Log successful retrieval of cart
             $this->logger->info('Cart retrieved successfully', ['cartId' => $id]);
 
             return new JsonResponse($cartView->toArray(), 200);
 
         } catch (\Symfony\Component\Messenger\Exception\ValidationFailedException $e) {
-            // Log validation failure
             $this->logger->warning('Validation failed for get cart query', [
                 'cartId' => $id,
                 'errors' => (string) $e->getViolations(),
@@ -125,7 +115,6 @@ class CartController
             ], 400);
 
         } catch (\Throwable $e) {
-            // Log unexpected errors
             $this->logger->error('Unexpected error retrieving cart', ['exception' => $e]);
 
             return new JsonResponse(['error' => 'Internal server error'], 500);
@@ -145,7 +134,6 @@ class CartController
 
             return new JsonResponse(['status' => 'item removed'], 200);
         } catch (\Symfony\Component\Messenger\Exception\ValidationFailedException $e) {
-            // Log validation failure
             $this->logger->warning('Validation failed for delete item query', [
                 'cartId' => $id,
                 'productId' => $productId,
